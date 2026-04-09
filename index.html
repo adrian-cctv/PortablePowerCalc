@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portable Power Architect | v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #cbd5e1; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        input, select { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; font-size: 12px !important; }
+        input:focus, select:focus { outline: none; border-color: #f97316 !important; box-shadow: 0 0 0 1px #f97316; }
+        .summary-card { background: rgba(15, 23, 42, 0.8); border: 1px solid #f9731633; border-radius: 12px; }
+        .metric-value { color: #f97316; font-family: 'JetBrains Mono', monospace; font-weight: bold; }
+        .guide-box { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); }
+        @media print { .no-print { display: none; } body { background: white; color: black; } .summary-card { border: 1px solid #ccc; } }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="flex items-center justify-between gap-6 mb-10 border-b border-slate-800 pb-8">
+            <div class="flex items-center gap-6">
+                <div class="p-3 bg-orange-600/10 rounded-xl border border-orange-500/20">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.5">
+                        <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tighter text-white uppercase">Portable <span class="text-orange-500">Power</span> Architect</h1>
+                    <p class="text-[10px] text-slate-500 mono tracking-[0.4em] uppercase">Skid & Trailer Design Engine // v2.0</p>
+                </div>
+            </div>
+            <div class="flex gap-2 no-print">
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-[10px] px-4 py-2 rounded font-bold uppercase tracking-widest transition">Export Report</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div class="xl:col-span-8 space-y-6">
+                
+                <div class="guide-box p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+                        Design Step: Finding Sun Hours
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mb-2">To ensure 24/7 uptime, you must design for the <strong>worst-case month</strong> (Winter Solstice).</p>
+                    <ol class="text-[11px] text-slate-400 space-y-1 ml-4 list-decimal">
+                        <li>Visit <strong><a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-400 underline">PVWatts Calculator</a></strong>.</li>
+                        <li>Enter address & click Go. Navigate to <strong>Results</strong>.</li>
+                        <li>Find the <strong>lowest</strong> Solar Radiation value (e.g., June = 3.79).</li>
+                        <li>Enter that value in the <strong>Worst-Month PSH</strong> field below.</li>
+                    </ol>
+                </div>
+
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-6">Continuous Hardware Load</h2>
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-[10px] text-slate-500 uppercase">
+                                <th class="pb-3 px-2">Component Description</th>
+                                <th class="pb-3 px-2 text-center">Qty</th>
+                                <th class="pb-3 px-2 text-center">Avg Watts</th>
+                                <th class="pb-3 px-2 text-right">Total Draw</th>
+                                <th class="no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="loadRows"></tbody>
+                    </table>
+                    <button onclick="addRow()" class="no-print mt-4 text-[10px] text-orange-500 hover:text-orange-400 font-bold uppercase tracking-widest">+ Add Hardware</button>
+                </div>
+
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-6">System Parameters & Environmental Buffers</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                        <div class="md:col-span-5 space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">DC Voltage</label>
+                                    <select id="voltage" onchange="calc()" class="w-full p-2 rounded">
+                                        <option value="12">12V DC</option><option value="24" selected>24V DC</option><option value="48">48V DC</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">Battery Type</label>
+                                    <select id="batType" onchange="calc()" class="w-full p-2 rounded">
+                                        <option value="lithium">Lithium (LiFePO4)</option><option value="lead">Lead Acid (AGM)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">Worst-Month PSH</label>
+                                    <input type="number" id="sun" value="3.8" step="0.01" oninput="calc()" class="w-full p-2 rounded">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">Autonomy (Days)</label>
+                                    <input type="number" id="days" value="3" oninput="calc()" class="w-full p-2 rounded">
+                                </div>
+                            </div>
+                           <div>
+                             <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">Environment</label>
+                                <select id="heatMode" onchange="calc()" class="w-full p-2 rounded">
+                                     <option value="1.0">Standard (<25°C)</option>
+                                     <option value="0.75" selected>High Heat (35°C+)</option>
+                                     <option value="0.5">Extreme (45°C+)</option>
+                                </select>
+                        </div>
+                            <div>
+                                <label class="text-[9px] text-slate-500 font-bold uppercase block mb-1">Efficiency Buffer (Losses)</label>
+                                <input type="range" id="effSlider" min="50" max="95" value="80" oninput="updateEff(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                                <div id="effVal" class="text-[10px] font-mono mt-1 text-orange-500 font-bold">80% Efficient</div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-7 bg-black/20 p-4 rounded-xl border border-slate-800/50">
+                            <h4 class="text-[10px] uppercase text-slate-400 font-bold mb-2">Buffer Logic Help</h4>
+                            <div class="text-[10px] text-slate-500 space-y-2">
+                                <p><strong class="text-slate-300">90% - Ideal:</strong> No conversion loss, perfect sun angle.</p>
+                                <p><strong class="text-slate-300">80% - Standard:</strong> Accounts for MPPT heat, PoE injectors, and light dust.</p>
+                                <p><strong class="text-slate-300">70% - Harsh:</strong> High heat (WA/Pilbara), heavy dust, long cable runs.</p>
+                                <p class="text-orange-900 border-t border-orange-900/20 pt-2 font-bold italic text-[9px]">Note: A lower efficiency requires a larger solar array to recharge the battery bank.</p>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="xl:col-span-4 space-y-6">
+                <div class="summary-card p-8 shadow-2xl sticky top-8">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-8 mono">Energy Analysis</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-black/40 p-5 rounded border border-orange-500/10 space-y-4">
+                            <div class="flex justify-between items-end border-b border-slate-800 pb-3">
+                                <span class="text-[10px] uppercase text-slate-500 font-bold">Total Load</span>
+                                <span id="totalWatts" class="text-2xl metric-value text-white">0W</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-500">Daily Consumption:</span>
+                                <span id="dailyAh" class="metric-value">0 Ah/day</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-500/5 p-5 rounded border border-green-500/20">
+                            <h3 class="text-[10px] uppercase text-green-500 font-bold mb-3">Solar Recharge</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-400">Min. Solar Array:</span>
+                                <span id="solarWatts" class="text-xl metric-value text-green-400">0W</span>
+                            </div>
+                            <p class="text-[8px] text-slate-500 mt-2 italic">Requires replacing 24h draw within <span id="sunDisp">3.8</span> hours.</p>
+                        </div>
+
+                        <div class="bg-blue-500/5 p-5 rounded border border-blue-500/20">
+                            <h3 class="text-[10px] uppercase text-blue-500 font-bold mb-3">Battery Bank</h3>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs text-slate-400">Required Bank:</span>
+                                <span id="bankSize" class="text-lg metric-value text-blue-400">0 Ah</span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-500 border-t border-blue-900/30 pt-2">
+                                <span>Est. Life:</span>
+                                <span id="resCycles" class="text-white font-bold">--- Cycles</span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>LVD Cut-off:</span>
+                                <span id="resLVD" class="text-red-400 font-bold">---V</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-500/5 p-5 rounded border border-blue-500/20 mt-4">
+                            <h3 class="text-[10px] uppercase text-blue-500 font-bold mb-3 italic">Lifecycle Forecast</h3>
+                            <div class="space-y-2 mono text-[11px]">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Projected EOL:</span>
+                                    <span id="resEOLDate" class="text-white font-bold">---</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Service Life:</span>
+                                    <span id="resYears" class="text-orange-400 font-bold">--- Years</span>
+                                </div>
+                            </div>
+                            <p class="text-[8px] text-slate-500 mt-3 pt-2 border-t border-blue-900/30">
+                                *Based on 80% SOH (State of Health) threshold. High heat (>35°C) may reduce these figures by 15-20%.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateEff(val) {
+            document.getElementById('effVal').innerText = val + "% Efficient";
+            calc();
+        }
+
+        function addRow(name="IP Camera", qty=1, w=7) {
+            const tbody = document.getElementById('loadRows');
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-800/40 hover:bg-slate-800/20 transition";
+            tr.innerHTML = `
+                <td class="py-3 px-2"><input type="text" value="${name}" class="w-full p-1 rounded"></td>
+                <td class="py-3 px-2"><input type="number" class="qty w-full text-center p-1 rounded" value="${qty}" oninput="calc()"></td>
+                <td class="py-3 px-2"><input type="number" class="watts w-full text-center p-1 rounded" value="${w}" oninput="calc()"></td>
+                <td class="py-3 px-2 text-right font-mono text-orange-400 font-bold row-total">0W</td>
+                <td class="py-3 px-2 text-center no-print"><button onclick="this.parentElement.parentElement.remove(); calc();" class="text-red-900 font-bold">×</button></td>
+            `;
+            tbody.appendChild(tr);
+            calc();
+        }
+
+        function calc() {
+            let totalW = 0;
+            document.querySelectorAll('#loadRows tr').forEach(row => {
+                const q = parseFloat(row.querySelector('.qty').value) || 0;
+                const w = parseFloat(row.querySelector('.watts').value) || 0;
+                const sum = q * w;
+                row.querySelector('.row-total').innerText = sum.toFixed(1) + 'W';
+                totalW += sum;
+            });
+
+            const v = parseFloat(document.getElementById('voltage').value);
+            const sun = parseFloat(document.getElementById('sun').value) || 1;
+            const days = parseFloat(document.getElementById('days').value) || 1;
+            const eff = parseFloat(document.getElementById('effSlider').value) / 100;
+            const type = document.getElementById('batType').value;
+
+            // Math Engine
+            const dailyAh = (totalW * 24) / v;
+            const solar = ((totalW * 24) / sun) / eff;
+            
+            // Battery Logic
+            const dodLimit = (type === "lithium") ? 0.9 : 0.5; // 90% vs 50%
+            const bank = (dailyAh * days) / dodLimit;
+
+            // Health & Protection Logic
+            const dailyDod = (dailyAh / bank) * 100;
+            let cycles = 0;
+            let lvd = 0;
+
+            if (type === "lithium") {
+                cycles = dailyDod < 80 ? 4500 : 3000;
+                lvd = (v == 12) ? 11.8 : (v == 24) ? 23.6 : 47.2;
+            } else {
+                cycles = dailyDod < 25 ? 1200 : dailyDod < 50 ? 550 : 250;
+                lvd = (v == 12) ? 11.4 : (v == 24) ? 22.8 : 45.6;
+            }
+
+            // Update UI
+            document.getElementById('totalWatts').innerText = Math.round(totalW) + "W";
+            document.getElementById('dailyAh').innerText = dailyAh.toFixed(1) + " Ah/day";
+            document.getElementById('bankSize').innerText = Math.round(bank) + " Ah";
+            document.getElementById('solarWatts').innerText = Math.round(solar) + "W";
+            document.getElementById('sunDisp').innerText = sun;
+            document.getElementById('resCycles').innerText = Math.round(cycles) + " Cycles";
+            document.getElementById('resLVD').innerText = lvd + "V DC";
+            
+            
+            // 1. Capture the heat multiplier
+            const heatMultiplier = parseFloat(document.getElementById('heatMode').value);
+            
+
+            updateLifecycleForecast(cycles, heatMultiplier);
+        }
+
+        function updateLifecycleForecast(cycles, heatMultiplier) {
+            // Apply the degradation multiplier to the total years
+            const yearsOfLife = (cycles / 365) * heatMultiplier;
+            
+            const now = new Date();
+            const eolDate = new Date();
+            eolDate.setFullYear(now.getFullYear() + Math.floor(yearsOfLife));
+            eolDate.setMonth(now.getMonth() + Math.round((yearsOfLife % 1) * 12));
+
+            const options = { month: 'short', year: 'numeric' };
+            document.getElementById('resEOLDate').innerText = eolDate.toLocaleDateString('en-AU', options);
+            document.getElementById('resYears').innerText = yearsOfLife.toFixed(1) + " Years";
+        }
+        // Init
+        addRow("4K Fixed Lens", 2, 7);
+        addRow("Industrial Router", 1, 5);
+        addRow("MPPT + Switch", 1, 10);
+    </script>
+</body>
+</html>
