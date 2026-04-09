@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Live Demo:** [[https://adrian-cctv.github.io/PortablePowerCalc/](https://adrian-cctv.github.io/PortablePowerCalc/)
+**Live Demo:** [[https://adrian-cctv.github.io/PortablePowerCalc/](https://adrian-cctv.github.io/PortablePowerCalc/)]
 
 ## 📖 Description
 The **Portable Power Architect** is a standalone, browser-based engineering tool designed for Security Architects, Field Technicians, and Systems Integrators. It provides a "Single Pane of Glass" for designing off-grid CCTV trailers, solar skids, and remote communications nodes. 
